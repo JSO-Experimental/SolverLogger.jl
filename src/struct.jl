@@ -33,19 +33,19 @@ Creates a solver logger.
 A `Logger` object.
 """
 struct Logger
-  keys :: Vector{Symbol}
-  names :: Vector{String}
-  formats :: Vector{String}
-  fmt_header :: Printf.Format
-  fmt_row :: Printf.Format
-  mode :: Symbol
-  verbosity :: Int
+  keys::Vector{Symbol}
+  names::Vector{String}
+  formats::Vector{String}
+  fmt_header::Printf.Format
+  fmt_row::Printf.Format
+  mode::Symbol
+  verbosity::Int
 end
 
 function Logger(
-  key_value_list :: Pair{Symbol, Tuple{String, String}}...;
-  mode :: Symbol = :print,
-  verbosity :: Int = 0,
+  key_value_list::Pair{Symbol, Tuple{String, String}}...;
+  mode::Symbol = :print,
+  verbosity::Int = 0,
 )
   n = length(key_value_list)
   keys = fill(:none, n)
