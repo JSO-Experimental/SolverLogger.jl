@@ -1,7 +1,7 @@
 ```@meta
-CurrentModule = JSOTemplate
+CurrentModule = SolverLogger
 ```
 
-# JSOTemplate
+# SolverLogger
 
-Documentation for [JSOTemplate](https://github.com/JuliaSmoothOptimizers/JSOTemplate.jl).
+Documentation for [SolverLogger](https://github.com/JuliaSmoothOptimizers/SolverLogger.jl).

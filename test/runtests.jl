@@ -1,6 +1,6 @@
-using JSOTemplate
+using SolverLogger
 using Test
 
-@testset "JSOTemplate.jl" begin
+@testset "SolverLogger.jl" begin
   # Write your tests here.
 end

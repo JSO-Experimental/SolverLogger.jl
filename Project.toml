@@ -1,13 +1,10 @@
-name = "JSOTemplate"
-uuid = "adf32eb0-fe7e-47bb-93e4-fe96e72f6839"
+name = "SolverLogger"
+uuid = "e6462751-90cf-4f5c-beb8-edae317af041"
 authors = ["Abel Soares Siqueira <abel.s.siqueira@gmail.com> and contributors"]
 version = "0.1.0"
 
+[deps]
+Printf = "de0858da-6303-5e67-8744-51eddeeeb8d7"
+
 [compat]
 julia = "1.6"
-
-[extras]
-Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
-
-[targets]
-test = ["Test"]
