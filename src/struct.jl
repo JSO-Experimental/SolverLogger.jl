@@ -65,7 +65,6 @@ function Logger(
     return "%" * m.captures[1] * "s"
   end
 
-  @info fmt_to_str_fmt.(fmts)
   solver = Logger(
     keys,
     names,
