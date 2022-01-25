@@ -8,7 +8,13 @@
 
 This is a logger for solvers, as the name implies.
 
-## Things to change
+## Basic usage
 
-- Project.toml: name and uuid
-- LICENSE.md: Check if MPL-v2 is the correct choice
+```
+julia> logger = Logger(:iter => ("Iter", "%4d"), :fx => ("f(x)", "%8.1e"), verbosity=1)
+...
+julia> header(logger)
+| Iter |     f(x) |
+julia> logger(45, sqrt(2))
+|   45 |  1.4e+00 |
+```

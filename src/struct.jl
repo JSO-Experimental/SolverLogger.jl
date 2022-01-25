@@ -25,8 +25,8 @@ Creates a solver logger.
     - (TODO) `string`: Returns the string.
 - `verbosity :: Int`: Verbosity level.
     - 0 means **silent**
-    - > 0 means **verbose**
-    - (TODO) Different
+    - Greater than 0 means **verbose**
+    - (TODO) Different values
 
 ## Output
 
@@ -56,11 +56,21 @@ function Logger(
     names[i] = v[1]
     fmts[i] = v[2]
   end
+
+  function fmt_to_str_fmt(x)
+    m = match(r"%[^0-9]*([0-9]*)[.]*[0-9]*", x)
+    if m === nothing || m.captures[1] == ""
+      return "%s"
+    end
+    return "%" * m.captures[1] * "s"
+  end
+
+  @info fmt_to_str_fmt.(fmts)
   solver = Logger(
     keys,
     names,
     fmts,
-    Printf.Format("| " * join(fill("%s", n), " | ") * " |"),
+    Printf.Format("| " * join(fmt_to_str_fmt.(fmts), " | ") * " |"),
     Printf.Format("| " * join(fmts, " | ") * " |"),
     mode,
     verbosity,
