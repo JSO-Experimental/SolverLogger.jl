@@ -32,7 +32,7 @@ Creates a solver logger.
 
 A `Logger` object.
 """
-struct Logger
+mutable struct Logger
   keys::Vector{Symbol}
   names::Vector{String}
   formats::Vector{String}

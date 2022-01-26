@@ -10,6 +10,7 @@ mutable struct CgNewSolver{T,S} <: KrylovSolver{T,S}
   Ap    :: S
   z     :: S
   stats :: SimpleStats{T}
+  logger :: Logger
 
   function CgNewSolver(n, m, S)
     T  = eltype(S)
@@ -20,7 +21,15 @@ mutable struct CgNewSolver{T,S} <: KrylovSolver{T,S}
     Ap = S(undef, n)
     z  = S(undef, 0)
     stats = SimpleStats(0, false, false, T[], T[], T[], "unknown")
-    solver = new{T,S}(Δx, x, r, p, Ap, z, stats)
+    logger = Logger(
+      :iter => ("k", "%5d"),
+      :rNorm => ("‖r‖", "%7.1e"),
+      :pAp => ("pAp", "%8.1e"),
+      :α => ("α", "%8.1e"),
+      :β => ("β", "%8.1e"),
+      mode = :print,
+    )
+    solver = new{T,S}(Δx, x, r, p, Ap, z, stats, logger)
     return solver
   end
 
@@ -90,16 +99,9 @@ function cg_new!(solver :: CgNewSolver{T,S}, A, b :: AbstractVector{T};
   pAp = zero(T)
   pNorm² = γ
   ε = atol + rtol * rNorm
-  logger = Logger(
-    :iter => ("k", "%5d"),
-    :rNorm => ("‖r‖", "%7.1e"),
-    :pAp => ("pAp", "%8.1e"),
-    :α => ("α", "%8.1e"),
-    :β => ("β", "%8.1e"),
-    mode = :print,
-    verbosity = verbose,
-  )
-  header(logger)
+
+  solver.logger.verbosity = verbose
+  header(solver.logger)
 
   solved = rNorm ≤ ε
   tired = iter ≥ itmax
@@ -129,7 +131,7 @@ function cg_new!(solver :: CgNewSolver{T,S}, A, b :: AbstractVector{T};
     # Compute step size to boundary if applicable.
     σ = radius > 0 ? maximum(to_boundary(x, p, radius, dNorm2=pNorm²)) : α
 
-    Krylov.display(iter, verbose) && logger(iter, rNorm, pAp, α, σ)
+    Krylov.display(iter, verbose) && solver.logger(iter, rNorm, pAp, α, σ)
 
     # Move along p from x to the boundary if either
     # the next step leads outside the trust region or
