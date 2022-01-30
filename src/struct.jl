@@ -32,12 +32,12 @@ Creates a solver logger.
 
 A `Logger` object.
 """
-mutable struct Logger
+mutable struct Logger{PfH <: Printf.Format, PfR <: Printf.Format}
   keys::Vector{Symbol}
   names::Vector{String}
   formats::Vector{String}
-  fmt_header::Printf.Format
-  fmt_row::Printf.Format
+  fmt_header::PfH
+  fmt_row::PfR
   mode::Symbol
   verbosity::Int
 end
@@ -65,12 +65,14 @@ function Logger(
     return "%" * m.captures[1] * "s"
   end
 
-  solver = Logger(
+  pfh = Printf.Format("| " * join(fmt_to_str_fmt.(fmts), " | ") * " |")
+  pfr = Printf.Format("| " * join(fmts, " | ") * " |")
+  solver = Logger{typeof(pfh), typeof(pfr)}(
     keys,
     names,
     fmts,
-    Printf.Format("| " * join(fmt_to_str_fmt.(fmts), " | ") * " |"),
-    Printf.Format("| " * join(fmts, " | ") * " |"),
+    pfh,
+    pfr,
     mode,
     verbosity,
   )

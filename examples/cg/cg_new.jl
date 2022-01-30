@@ -2,7 +2,7 @@ using Krylov: @kaxpby!, @kdot, @kaxpy!, ktypeof, allocate_if, reset!, SimpleStat
 using Printf
 using SolverLogger
 
-mutable struct CgNewSolver{T,S} <: KrylovSolver{T,S}
+mutable struct CgNewSolver{T,S,L <: Logger} <: KrylovSolver{T,S}
   Δx    :: S
   x     :: S
   r     :: S
@@ -10,7 +10,7 @@ mutable struct CgNewSolver{T,S} <: KrylovSolver{T,S}
   Ap    :: S
   z     :: S
   stats :: SimpleStats{T}
-  logger :: Logger
+  logger :: L
 
   function CgNewSolver(n, m, S)
     T  = eltype(S)
@@ -29,7 +29,7 @@ mutable struct CgNewSolver{T,S} <: KrylovSolver{T,S}
       :β => ("β", "%8.1e"),
       mode = :print,
     )
-    solver = new{T,S}(Δx, x, r, p, Ap, z, stats, logger)
+    solver = new{T,S,typeof(logger)}(Δx, x, r, p, Ap, z, stats, logger)
     return solver
   end
 
@@ -46,10 +46,11 @@ function cg_new(A, b :: AbstractVector{T}; kwargs...) where T <: AbstractFloat
   return (solver.x, solver.stats)
 end
 
-function cg_new!(solver :: CgNewSolver{T,S}, A, b :: AbstractVector{T};
+function cg_new!(solver :: CgNewSolver{T,S,L}, A, b :: AbstractVector{T};
              M=I, atol :: T=√eps(T), rtol :: T=√eps(T), restart :: Bool=false,
              itmax :: Int=0, radius :: T=zero(T), linesearch :: Bool=false,
-             verbose :: Int=0, history :: Bool=false) where {T <: AbstractFloat, S <: DenseVector{T}}
+             logger :: Logger = solver.logger,
+             verbose :: Int=0, history :: Bool=false) where {T <: AbstractFloat, S <: DenseVector{T}, L <: Logger}
 
   linesearch && (radius > 0) && error("`linesearch` set to `true` but trust-region radius > 0")
 
@@ -100,8 +101,8 @@ function cg_new!(solver :: CgNewSolver{T,S}, A, b :: AbstractVector{T};
   pNorm² = γ
   ε = atol + rtol * rNorm
 
-  solver.logger.verbosity = verbose
-  header(solver.logger)
+  # logger.verbosity = verbose
+  # header(logger)
 
   solved = rNorm ≤ ε
   tired = iter ≥ itmax
@@ -131,7 +132,7 @@ function cg_new!(solver :: CgNewSolver{T,S}, A, b :: AbstractVector{T};
     # Compute step size to boundary if applicable.
     σ = radius > 0 ? maximum(to_boundary(x, p, radius, dNorm2=pNorm²)) : α
 
-    Krylov.display(iter, verbose) && solver.logger(iter, rNorm, pAp, α, σ)
+    Krylov.display(iter, verbose) && row(logger, iter, rNorm, pAp, α, σ)
 
     # Move along p from x to the boundary if either
     # the next step leads outside the trust region or
