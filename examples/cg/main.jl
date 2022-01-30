@@ -5,10 +5,10 @@ include("cg_new.jl")
 macro wrappedallocs(expr)
   argnames = [gensym() for a in expr.args]
   quote
-      function g($(argnames...))
-          @allocated $(Expr(expr.head, argnames...))
-      end
-      $(Expr(:call, :g, [esc(a) for a in expr.args]...))
+    function g($(argnames...))
+      @allocated $(Expr(expr.head, argnames...))
+    end
+    $(Expr(:call, :g, [esc(a) for a in expr.args]...))
   end
 end
 
@@ -31,7 +31,7 @@ function main()
   @info @wrappedallocs cg!(ksolver_cg, A, b)
 
   @info "New CG"
-  cg_new!(ksolver_cg_new, A, b, verbose=0)
+  cg_new!(ksolver_cg_new, A, b, verbose = 0)
   @info @wrappedallocs cg_new!(ksolver_cg_new, A, b)
 
   # cg!(ksolver_cg, A, b, verbose=1)

@@ -4,7 +4,7 @@ include("cg_new.jl")
 
 eye(n::Int) = sparse(1.0 * I, n, n)
 
-function get_div_grad(n1 :: Int, n2 :: Int, n3 :: Int)
+function get_div_grad(n1::Int, n2::Int, n3::Int)
 
   # Divergence
   D1 = kron(eye(n3), kron(eye(n2), ddx(n1)))
@@ -18,13 +18,13 @@ function get_div_grad(n1 :: Int, n2 :: Int, n3 :: Int)
 end
 
 # 1D finite difference on staggered grid
-function ddx(n :: Int)
+function ddx(n::Int)
   e = ones(n)
-  return sparse([1:n; 1:n], [1:n; 2:n+1], [-e; e])
+  return sparse([1:n; 1:n], [1:n; 2:(n + 1)], [-e; e])
 end
 
 # Sparse Laplacian.
-function sparse_laplacian(n :: Int=16)
+function sparse_laplacian(n::Int = 16)
   A = get_div_grad(n, n, n)
   b = ones(n^3)
   return A, b
@@ -46,7 +46,9 @@ options = [
   ("New CG verbose", cg_new!, ksolver_cg_new, Dict(:verbose => 1)),
 ]
 for (name, solver, ksolver, args) in options
-  bg = @benchmark for t=1:10 runall($ksolver, $A, $b, $solver, $args) end
+  bg = @benchmark for t = 1:10
+    runall($ksolver, $A, $b, $solver, $args)
+  end
   push!(benchmarks, bg)
 end
 

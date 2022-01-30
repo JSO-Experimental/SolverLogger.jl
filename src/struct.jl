@@ -67,15 +67,7 @@ function Logger(
 
   pfh = Printf.Format("| " * join(fmt_to_str_fmt.(fmts), " | ") * " |")
   pfr = Printf.Format("| " * join(fmts, " | ") * " |")
-  solver = Logger{typeof(pfh), typeof(pfr)}(
-    keys,
-    names,
-    fmts,
-    pfh,
-    pfr,
-    mode,
-    verbosity,
-  )
+  solver = Logger{typeof(pfh), typeof(pfr)}(keys, names, fmts, pfh, pfr, mode, verbosity)
 
   return solver
 end
