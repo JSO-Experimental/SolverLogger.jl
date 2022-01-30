@@ -4,7 +4,7 @@ include("cg_new.jl")
 
 function runall(solver, args)
   Random.seed!(0)
-  for n = [10, 50, 100, 500]
+  for n in [10, 50, 100, 500]
     for t = 1:10
       A = rand(n, n)
       A = A * A' + I

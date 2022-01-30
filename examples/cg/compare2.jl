@@ -22,7 +22,9 @@ options = [
   ("New CG verbose", cg_new!, ksolver_cg_new, Dict(:verbose => 1)),
 ]
 for (name, solver, ksolver, args) in options
-  bg = @benchmark for t=1:10 runall($ksolver, $A, $b, $solver, $args) end
+  bg = @benchmark for t = 1:10
+    runall($ksolver, $A, $b, $solver, $args)
+  end
   push!(benchmarks, bg)
 end
 

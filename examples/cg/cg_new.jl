@@ -1,25 +1,35 @@
-using Krylov: @kaxpby!, @kdot, @kaxpy!, ktypeof, allocate_if, reset!, SimpleStats, krylov_dot, krylov_axpy!, krylov_axpby!
+using Krylov:
+  @kaxpby!,
+  @kdot,
+  @kaxpy!,
+  ktypeof,
+  allocate_if,
+  reset!,
+  SimpleStats,
+  krylov_dot,
+  krylov_axpy!,
+  krylov_axpby!
 using Printf
 using SolverLogger
 
-mutable struct CgNewSolver{T,S,L <: Logger} <: KrylovSolver{T,S}
-  Δx    :: S
-  x     :: S
-  r     :: S
-  p     :: S
-  Ap    :: S
-  z     :: S
-  stats :: SimpleStats{T}
-  logger :: L
+mutable struct CgNewSolver{T, S, L <: Logger} <: KrylovSolver{T, S}
+  Δx::S
+  x::S
+  r::S
+  p::S
+  Ap::S
+  z::S
+  stats::SimpleStats{T}
+  logger::L
 
   function CgNewSolver(n, m, S)
-    T  = eltype(S)
+    T = eltype(S)
     Δx = S(undef, 0)
-    x  = S(undef, n)
-    r  = S(undef, n)
-    p  = S(undef, n)
+    x = S(undef, n)
+    r = S(undef, n)
+    p = S(undef, n)
     Ap = S(undef, n)
-    z  = S(undef, 0)
+    z = S(undef, 0)
     stats = SimpleStats(0, false, false, T[], T[], T[], "unknown")
     logger = Logger(
       :iter => ("k", "%5d"),
@@ -29,7 +39,7 @@ mutable struct CgNewSolver{T,S,L <: Logger} <: KrylovSolver{T,S}
       :β => ("β", "%8.1e"),
       mode = :print,
     )
-    solver = new{T,S,typeof(logger)}(Δx, x, r, p, Ap, z, stats, logger)
+    solver = new{T, S, typeof(logger)}(Δx, x, r, p, Ap, z, stats, logger)
     return solver
   end
 
@@ -40,18 +50,27 @@ mutable struct CgNewSolver{T,S,L <: Logger} <: KrylovSolver{T,S}
   end
 end
 
-function cg_new(A, b :: AbstractVector{T}; kwargs...) where T <: AbstractFloat
+function cg_new(A, b::AbstractVector{T}; kwargs...) where {T <: AbstractFloat}
   solver = CgNewSolver(A, b)
   cg_new!(solver, A, b; kwargs...)
   return (solver.x, solver.stats)
 end
 
-function cg_new!(solver :: CgNewSolver{T,S,L}, A, b :: AbstractVector{T};
-             M=I, atol :: T=√eps(T), rtol :: T=√eps(T), restart :: Bool=false,
-             itmax :: Int=0, radius :: T=zero(T), linesearch :: Bool=false,
-             logger :: Logger = solver.logger,
-             verbose :: Int=0, history :: Bool=false) where {T <: AbstractFloat, S <: DenseVector{T}, L <: Logger}
-
+function cg_new!(
+  solver::CgNewSolver{T, S, L},
+  A,
+  b::AbstractVector{T};
+  M = I,
+  atol::T = √eps(T),
+  rtol::T = √eps(T),
+  restart::Bool = false,
+  itmax::Int = 0,
+  radius::T = zero(T),
+  linesearch::Bool = false,
+  logger::Logger = solver.logger,
+  verbose::Int = 0,
+  history::Bool = false,
+) where {T <: AbstractFloat, S <: DenseVector{T}, L <: Logger}
   linesearch && (radius > 0) && error("`linesearch` set to `true` but trust-region radius > 0")
 
   n, m = size(A)
@@ -67,7 +86,7 @@ function cg_new!(solver :: CgNewSolver{T,S,L}, A, b :: AbstractVector{T};
   ktypeof(b) == S || error("ktypeof(b) ≠ $S")
 
   # Set up workspace.
-  allocate_if(!MisI  , solver, :z , S, n)
+  allocate_if(!MisI, solver, :z, S, n)
   allocate_if(restart, solver, :Δx, S, n)
   Δx, x, r, p, Ap, stats = solver.Δx, solver.x, solver.r, solver.p, solver.Ap, solver.stats
   rNorms = stats.residuals
@@ -130,7 +149,7 @@ function cg_new!(solver :: CgNewSolver{T,S,L}, A, b :: AbstractVector{T};
     α = γ / pAp
 
     # Compute step size to boundary if applicable.
-    σ = radius > 0 ? maximum(to_boundary(x, p, radius, dNorm2=pNorm²)) : α
+    σ = radius > 0 ? maximum(to_boundary(x, p, radius, dNorm2 = pNorm²)) : α
 
     Krylov.display(iter, verbose) && row(logger, iter, rNorm, pAp, α, σ)
 
@@ -142,7 +161,7 @@ function cg_new!(solver :: CgNewSolver{T,S,L}, A, b :: AbstractVector{T};
       on_boundary = true
     end
 
-    @kaxpy!(n,  α,  p, x)
+    @kaxpy!(n, α, p, x)
     @kaxpy!(n, -α, Ap, r)
     MisI || mul!(z, M, r)
     γ_next = @kdot(n, r, z)
